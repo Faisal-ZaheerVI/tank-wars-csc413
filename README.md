@@ -1,7 +1,7 @@
 # CSC 413 Term Project README
 
-Name:
+Name: Faisal Zaheer
 
-Email:
+Email: fzaheer@mail.sfsu.edu
 
 Extra Features:
