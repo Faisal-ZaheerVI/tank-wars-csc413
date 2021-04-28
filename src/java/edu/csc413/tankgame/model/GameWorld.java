@@ -9,30 +9,60 @@ import java.util.*;
 public class GameWorld {
     // TODO: Implement. There's a lot of information the GameState will need to store to provide contextual information.
     //       Add whatever instance variables, constructors, and methods are needed.
+    private final List<Entity> entities;
+    private final List<Entity> newShells;
 
     public GameWorld() {
         // TODO: Implement.
+        entities = new ArrayList<>();
+        newShells = new ArrayList<>();
     }
 
     /** Returns a list of all entities in the game. */
     public List<Entity> getEntities() {
         // TODO: Implement.
-        return null;
+        return entities;
     }
 
     /** Adds a new entity to the game. */
-    public void addEntity(Tank entity) {
+    public void addEntity(Entity entity) {
         // TODO: Implement.
+        entities.add(entity);
     }
 
     /** Returns the Entity with the specified ID. */
     public Entity getEntity(String id) {
         // TODO: Implement.
+        for (Entity entity : entities) {
+            if (entity.getId().equals(id)) {
+                return entity;
+            }
+        }
         return null;
     }
 
     /** Removes the entity with the specified ID from the game. */
     public void removeEntity(String id) {
         // TODO: Implement.
+        for (Entity entity : entities) {
+            if (entity.getId().equals(id)) {
+                entities.remove(entity);
+            }
+        }
+    }
+
+    // Can expands to more than just shells, like if the game will have regenerating walls
+    // or something similar. Expand to Entity type instead of Shell.
+
+    public void addShell(Entity shell) {
+        newShells.add(shell);
+    }
+
+    public List<Entity> getShells() {
+        return newShells;
+    }
+
+    public void clearShells() {
+        newShells.clear();
     }
 }
