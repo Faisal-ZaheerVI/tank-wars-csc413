@@ -62,20 +62,20 @@ public class GameDriver {
                 Constants.PLAYER_TANK_INITIAL_X,
                 Constants.PLAYER_TANK_INITIAL_Y,
                 Constants.PLAYER_TANK_INITIAL_ANGLE);
-//        SimpleTank simpleTank = new SimpleTank(
-//                Constants.AI_TANK_1_ID,
-//                Constants.AI_TANK_1_INITIAL_X,
-//                Constants.AI_TANK_1_INITIAL_Y,
-//                Constants.AI_TANK_1_INITIAL_ANGLE);
-        Entity advancedTank = new AdvancedTank(
-                Constants.AI_TANK_2_ID,
-                Constants.AI_TANK_2_INITIAL_X,
-                Constants.AI_TANK_2_INITIAL_Y,
-                Constants.AI_TANK_2_INITIAL_ANGLE
-        );
+        SimpleTank simpleTank = new SimpleTank(
+                Constants.AI_TANK_1_ID,
+                Constants.AI_TANK_1_INITIAL_X,
+                Constants.AI_TANK_1_INITIAL_Y,
+                Constants.AI_TANK_1_INITIAL_ANGLE);
+//        Entity advancedTank = new AdvancedTank(
+//                Constants.AI_TANK_2_ID,
+//                Constants.AI_TANK_2_INITIAL_X,
+//                Constants.AI_TANK_2_INITIAL_Y,
+//                Constants.AI_TANK_2_INITIAL_ANGLE);
+
         gameWorld.addEntity(playerTank);
-//        gameWorld.addEntity(simpleTank);
-        gameWorld.addEntity(advancedTank);
+        gameWorld.addEntity(simpleTank);
+//        gameWorld.addEntity(advancedTank);
 
         // View part:
         runGameView.addSprite(
@@ -84,18 +84,18 @@ public class GameDriver {
                 playerTank.getX(),
                 playerTank.getY(),
                 playerTank.getAngle());
-//        runGameView.addSprite(
-//                simpleTank.getId(),
-//                RunGameView.AI_TANK_IMAGE_FILE,
-//                simpleTank.getX(),
-//                simpleTank.getY(),
-//                simpleTank.getAngle());
         runGameView.addSprite(
-                advancedTank.getId(),
+                simpleTank.getId(),
                 RunGameView.AI_TANK_IMAGE_FILE,
-                advancedTank.getX(),
-                advancedTank.getY(),
-                advancedTank.getAngle());
+                simpleTank.getX(),
+                simpleTank.getY(),
+                simpleTank.getAngle());
+//        runGameView.addSprite(
+//                advancedTank.getId(),
+//                RunGameView.AI_TANK_IMAGE_FILE,
+//                advancedTank.getX(),
+//                advancedTank.getY(),
+//                advancedTank.getAngle());
     }
 
     /**
