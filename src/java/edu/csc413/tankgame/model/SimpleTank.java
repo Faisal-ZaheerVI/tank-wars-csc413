@@ -16,14 +16,6 @@ public class SimpleTank extends Tank {
     public void move(GameWorld gameWorld) {
         Entity playerTank = gameWorld.getEntity(Constants.PLAYER_TANK_ID);
 
-        if (!tankStopped) {
-            moveForward(Constants.TANK_MOVEMENT_SPEED / 4);
-        }
-
-        else if (tankStopped) {
-            moveForward(0);
-        }
-
         // To figure out what angle the AI tank needs to face, we'll use the
         // change in the x and y axes between the AI and player tanks.
         double dx = playerTank.getX() - getX();
@@ -49,9 +41,12 @@ public class SimpleTank extends Tank {
             turnLeft(Constants.TANK_TURN_SPEED);
         }
 
-        // After 275 cycles, fire a shell, then after 300 cycles every time after.
-        if (counter % 300 == 250) {
-            fireShell(gameWorld);
+        if (!tankStopped) {
+            moveForward(Constants.TANK_MOVEMENT_SPEED / 4);
+        }
+
+        else if (tankStopped) {
+            moveForward(0);
         }
 
         // Tank wait delay.
@@ -63,6 +58,11 @@ public class SimpleTank extends Tank {
 
         else if (counter % 300 == 0) {
             tankStopped = false;
+        }
+
+        // After 275 cycles, fire a shell, then after 300 cycles every time after.
+        if (counter % 300 == 250) {
+            fireShell(gameWorld);
         }
 
         // Resets general counter.
