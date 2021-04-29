@@ -4,11 +4,13 @@ import edu.csc413.tankgame.Constants;
 
 public class AdvancedTank extends Tank {
     private static boolean shellFired;
+    private static boolean tankStopped;
     private int counter;
 
     public AdvancedTank(String id, double x, double y, double angle) {
         super(id, x, y, angle);
         shellFired = false;
+        tankStopped = true;
         counter = 0;
     }
 
@@ -16,7 +18,13 @@ public class AdvancedTank extends Tank {
     public void move(GameWorld gameWorld) {
         Entity playerTank = gameWorld.getEntity(Constants.PLAYER_TANK_ID);
 
-        moveForward(Constants.TANK_MOVEMENT_SPEED / 4);
+        if (!tankStopped) {
+            moveForward(Constants.TANK_MOVEMENT_SPEED / 4);
+        }
+
+        else if (tankStopped) {
+            moveForward(0);
+        }
 
         // To figure out what angle the AI tank needs to face, we'll use the
         // change in the x and y axes between the AI and player tanks.
@@ -48,14 +56,26 @@ public class AdvancedTank extends Tank {
             shellFired = true;
         }
 
-        if (counter % 200 == 0) {
+        // Every 200 cycles, fire a shell.
+        if (counter % 300 == 0) {
             shellFired = false;
         }
 
-        if (counter >= 1000) {
+        // Resets general counter.
+        if (counter >= 1200) {
             counter = 0;
         }
 
+        // Tank wait delay.
+        if (counter % 300 == 250) {
+            tankStopped = true;
+        }
+
+        else if (counter % 300 == 50) {
+            tankStopped = false;
+        }
+
+        // Increments counter.
         counter++;
     }
 

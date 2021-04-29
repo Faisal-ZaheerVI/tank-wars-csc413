@@ -153,14 +153,6 @@ public class GameDriver {
     private void resetGame() {
         // TODO: Implement.
         runGameView.reset();
-
-        ArrayList<Entity> originalEntities = new ArrayList<>(gameWorld.getEntities());
-        for (Entity entity : gameWorld.getEntities()) {
-            runGameView.removeSprite(entity.getId());
-        }
-        for (Entity entity : originalEntities) {
-            gameWorld.removeEntity(entity.getId());
-        }
     }
 
     public static void main(String[] args) {
