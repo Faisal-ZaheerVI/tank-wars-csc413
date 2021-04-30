@@ -3,13 +3,14 @@ package edu.csc413.tankgame.model;
 import edu.csc413.tankgame.Constants;
 
 public class SimpleTank extends Tank {
-    private static boolean tankStopped;
-    private int counter;
+    private boolean tankStopped;
+    private final int shootDelay;
 
     public SimpleTank(String id, double x, double y, double angle) {
         super(id, x, y, angle);
         tankStopped = false;
         counter = 0;
+        shootDelay = 300;
     }
 
     @Override
@@ -52,16 +53,16 @@ public class SimpleTank extends Tank {
         // Tank wait delay.
         // Tank starts moving at start of game after 25 cycles.
         // Tank stops and waits for 75 cycles to aim and fire a shell at playerTank.
-        if (counter % 300 == 225) {
+        if (counter % shootDelay == 225) {
             tankStopped = true;
         }
 
-        else if (counter % 300 == 0) {
+        else if (counter % shootDelay == 0) {
             tankStopped = false;
         }
 
         // After 275 cycles, fire a shell, then after 300 cycles every time after.
-        if (counter % 300 == 250) {
+        if (counter % shootDelay == 250) {
             fireShell(gameWorld);
         }
 
@@ -72,10 +73,5 @@ public class SimpleTank extends Tank {
 
         // Increments counter.
         counter++;
-    }
-
-    @Override
-    public void checkBounds(GameWorld gameWorld) {
-
     }
 }

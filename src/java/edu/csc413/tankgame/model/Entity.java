@@ -5,10 +5,10 @@ package edu.csc413.tankgame.model;
  * as tanks, shells, walls, power ups, etc.
  */
 public abstract class Entity {
-    private String id;
-    private double x;
-    private double y;
-    private double angle;
+    protected String id;
+    protected double x;
+    protected double y;
+    protected double angle;
 
     public Entity(String id, double x, double y, double angle) {
         this.id = id;

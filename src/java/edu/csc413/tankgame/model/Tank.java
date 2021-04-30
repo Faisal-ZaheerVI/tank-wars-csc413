@@ -7,6 +7,7 @@ import edu.csc413.tankgame.*;
 public abstract class Tank extends Entity {
     // TODO: Implement. A lot of what's below is relevant to all Entity types, not just Tanks. Move it accordingly to
     //       Entity class.
+    protected int counter;
 
     public Tank(String id, double x, double y, double angle) {
         super(id, x, y, angle);
@@ -14,7 +15,24 @@ public abstract class Tank extends Entity {
 
     @Override
     public void checkBounds(GameWorld gameWorld) {
+        double tankX = Constants.TANK_WIDTH / 2;
+        double tankY = Constants.TANK_HEIGHT / 2;
 
+        if (getX() < Constants.TANK_X_LOWER_BOUND - tankX) {
+            x = Constants.TANK_X_LOWER_BOUND - tankX;
+        }
+
+        else if (getX() > Constants.TANK_X_UPPER_BOUND + tankX) {
+            x = Constants.TANK_X_UPPER_BOUND + tankX;
+        }
+
+        if (getY() < Constants.TANK_Y_LOWER_BOUND - tankY) {
+            y = Constants.TANK_Y_LOWER_BOUND - tankY;
+        }
+
+        else if (getY() > Constants.TANK_Y_UPPER_BOUND + tankY) {
+            y = Constants.TANK_Y_UPPER_BOUND + tankY;
+        }
     }
 
     // TODO: The methods below are provided so you don't have to do the math for movement. You should call these methods

@@ -54,7 +54,12 @@ public class GameDriver {
     private void setUpGame() {
         // TODO: Implement.
 
-        // List<WallInformation> wallInfo = WallInformation.readWalls();
+        List<WallInformation> wallInfo = WallInformation.readWalls();
+        for (WallInformation wall : wallInfo) {
+            Entity newWall = new Wall(wall.getX(), wall.getY());
+            gameWorld.addEntity(newWall);
+            runGameView.addSprite(newWall.getId(), wall.getImageFile(), newWall.getX(), newWall.getY(), newWall.getAngle());
+        }
 
         // Create entities in the game world based on entity type.
         Entity playerTank = new PlayerTank(
@@ -67,15 +72,9 @@ public class GameDriver {
                 Constants.AI_TANK_1_INITIAL_X,
                 Constants.AI_TANK_1_INITIAL_Y,
                 Constants.AI_TANK_1_INITIAL_ANGLE);
-//        Entity advancedTank = new AdvancedTank(
-//                Constants.AI_TANK_2_ID,
-//                Constants.AI_TANK_2_INITIAL_X,
-//                Constants.AI_TANK_2_INITIAL_Y,
-//                Constants.AI_TANK_2_INITIAL_ANGLE);
 
         gameWorld.addEntity(playerTank);
         gameWorld.addEntity(simpleTank);
-//        gameWorld.addEntity(advancedTank);
 
         // View part:
         runGameView.addSprite(
@@ -90,12 +89,6 @@ public class GameDriver {
                 simpleTank.getX(),
                 simpleTank.getY(),
                 simpleTank.getAngle());
-//        runGameView.addSprite(
-//                advancedTank.getId(),
-//                RunGameView.AI_TANK_IMAGE_FILE,
-//                advancedTank.getX(),
-//                advancedTank.getY(),
-//                advancedTank.getAngle());
     }
 
     /**
@@ -118,6 +111,7 @@ public class GameDriver {
             entity.move(gameWorld);
         }
 
+        // Check bounds for each entity in gameWorld.
         for (Entity entity : originalEntities) {
             entity.checkBounds(gameWorld);
         }
@@ -142,6 +136,25 @@ public class GameDriver {
             runGameView.setSpriteLocationAndAngle(
                     entity.getId(), entity.getX(), entity.getY(), entity.getAngle());
         }
+
+        // Iterates through destroyed shells to add the explosion animation and remove the shells from the game.
+        ArrayList<Entity> destroyedShells = new ArrayList<>(gameWorld.getDestroyedShells());
+        if (destroyedShells.size() > 0) {
+            for (Entity shell : destroyedShells) {
+                runGameView.addAnimation(RunGameView.SHELL_EXPLOSION_ANIMATION, 10, shell.getX(), shell.getY());
+            }
+
+            // For each destroyed shell, remove it's sprite, and then remove from gameWorld.
+            for (Entity shell : gameWorld.getDestroyedShells()) {
+                runGameView.removeSprite(shell.getId());
+            }
+
+            for (Entity shell : destroyedShells) {
+                gameWorld.removeEntity(shell.getId());
+            }
+        }
+
+        gameWorld.clearDestroyedShells();
 
         return true;
     }

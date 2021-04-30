@@ -11,11 +11,13 @@ public class GameWorld {
     //       Add whatever instance variables, constructors, and methods are needed.
     private final List<Entity> entities;
     private final List<Entity> newShells;
+    private final List<Entity> destoryedShells;
 
     public GameWorld() {
         // TODO: Implement.
         entities = new ArrayList<>();
         newShells = new ArrayList<>();
+        destoryedShells = new ArrayList<>();
     }
 
     /** Returns a list of all entities in the game. */
@@ -44,7 +46,8 @@ public class GameWorld {
     /** Removes the entity with the specified ID from the game. */
     public void removeEntity(String id) {
         // TODO: Implement.
-        for (Entity entity : entities) {
+        List<Entity> tempList = new ArrayList<>(entities);
+        for (Entity entity : tempList) {
             if (entity.getId().equals(id)) {
                 entities.remove(entity);
             }
@@ -64,5 +67,17 @@ public class GameWorld {
 
     public void clearShells() {
         newShells.clear();
+    }
+
+    public void destroyShell(String id) {
+        destoryedShells.add(getEntity(id));
+    }
+
+    public List<Entity> getDestroyedShells() {
+        return destoryedShells;
+    }
+
+    public void clearDestroyedShells() {
+        destoryedShells.clear();
     }
 }

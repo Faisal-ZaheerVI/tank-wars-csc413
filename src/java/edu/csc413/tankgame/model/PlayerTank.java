@@ -5,10 +5,12 @@ import edu.csc413.tankgame.KeyboardReader;
 
 public class PlayerTank extends Tank {
     private static boolean spacePressed;
+    private int cooldown;
 
     public PlayerTank(String id, double x, double y, double angle) {
         super(id, x, y, angle);
         spacePressed = false;
+        cooldown = 0;
     }
 
     @Override
@@ -28,35 +30,19 @@ public class PlayerTank extends Tank {
             turnRight(Constants.TANK_TURN_SPEED);
         }
 
-        // Fixed Keyboard input so that when space key
-        // is pressed, only one shell fires at a time.
-        if (keyboardReader.spacePressed() && !spacePressed) {
+        // * Fixed Keyboard input so that when space key is pressed, only one shell fires at a time.
+        // * Added cooldown system so that player can fire a shell every 200 iterations.
+        if (keyboardReader.spacePressed() && !spacePressed && cooldown == 0) {
             fireShell(gameWorld);
             spacePressed = true;
+            cooldown = 200;
         }
         if (!keyboardReader.spacePressed()) {
             spacePressed = false;
         }
+
+        if (cooldown != 0) {
+            cooldown--;
+        }
     }
-
-//    private void fireShell(GameWorld gameWorld) {
-//        Shell shell = new Shell(getShellX(), getShellY(), getShellAngle());
-//        gameWorld.addShell(shell);
-//    }
-
-    // The following methods will be useful for determining where a shell should be spawned when it
-    // is created by this tank. It needs a slight offset so it appears from the front of the tank,
-    // even if the tank is rotated. The shell should have the same angle as the tank.
-
-//    private double getShellX() {
-//        return getX() + Constants.TANK_WIDTH / 2 + 45.0 * Math.cos(getAngle()) - Constants.SHELL_WIDTH / 2;
-//    }
-//
-//    private double getShellY() {
-//        return getY() + Constants.TANK_HEIGHT / 2 + 45.0 * Math.sin(getAngle()) - Constants.SHELL_HEIGHT / 2;
-//    }
-//
-//    private double getShellAngle() {
-//        return getAngle();
-//    }
 }
