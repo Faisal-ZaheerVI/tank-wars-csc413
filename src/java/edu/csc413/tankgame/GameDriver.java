@@ -54,6 +54,7 @@ public class GameDriver {
     private void setUpGame() {
         // TODO: Implement.
 
+        // Initializes walls (location+sprites) based on WallInformation.
         List<WallInformation> wallInfo = WallInformation.readWalls();
         for (WallInformation wall : wallInfo) {
             Entity newWall = new Wall(wall.getX(), wall.getY());
@@ -116,6 +117,16 @@ public class GameDriver {
             entity.checkBounds(gameWorld);
         }
 
+        // Collision detection and handling between entities.
+        for (int i = 0; i < originalEntities.size(); i++) {
+            for (int j = i + 1; j < originalEntities.size(); j++) {
+                boolean entitiesOverlap = gameWorld.entitiesOverlap(gameWorld.getEntities().get(i), gameWorld.getEntities().get(j));
+                if (entitiesOverlap) {
+                    gameWorld.handleCollision(gameWorld.getEntities().get(i), gameWorld.getEntities().get(j));
+                }
+            }
+        }
+
         // 1. Make a copy of the entities list gameWorld.getEntities()
         // After moving all entities, gameWorld might have a few extra entities in it.
 
@@ -138,23 +149,25 @@ public class GameDriver {
         }
 
         // Iterates through destroyed shells to add the explosion animation and remove the shells from the game.
-        ArrayList<Entity> destroyedShells = new ArrayList<>(gameWorld.getDestroyedShells());
-        if (destroyedShells.size() > 0) {
-            for (Entity shell : destroyedShells) {
-                runGameView.addAnimation(RunGameView.SHELL_EXPLOSION_ANIMATION, 10, shell.getX(), shell.getY());
+        ArrayList<Entity> destroyedEntities = new ArrayList<>(gameWorld.getDestroyedEntities());
+        if (destroyedEntities.size() > 0) {
+            for (Entity entity : destroyedEntities) {
+                if (entity instanceof Shell) {
+                    runGameView.addAnimation(RunGameView.SHELL_EXPLOSION_ANIMATION, 10, entity.getX(), entity.getY());
+                }
             }
 
             // For each destroyed shell, remove it's sprite, and then remove from gameWorld.
-            for (Entity shell : gameWorld.getDestroyedShells()) {
-                runGameView.removeSprite(shell.getId());
+            for (Entity entity : gameWorld.getDestroyedEntities()) {
+                runGameView.removeSprite(entity.getId());
             }
 
-            for (Entity shell : destroyedShells) {
-                gameWorld.removeEntity(shell.getId());
+            for (Entity entity : destroyedEntities) {
+                gameWorld.removeEntity(entity.getId());
             }
         }
 
-        gameWorld.clearDestroyedShells();
+        gameWorld.clearDestroyedEntities();
 
         return true;
     }

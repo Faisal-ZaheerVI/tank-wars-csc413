@@ -23,6 +23,16 @@ public class Shell extends Entity {
     }
 
     @Override
+    public double getXBound() {
+        return getX() + Constants.SHELL_WIDTH;
+    }
+
+    @Override
+    public double getYBound() {
+        return getY() + Constants.SHELL_HEIGHT;
+    }
+
+    @Override
     public void checkBounds(GameWorld gameWorld) {
         // Out of bounds if:
         // x < lowest acceptable x value OR x > highest acceptable x value
@@ -53,7 +63,7 @@ public class Shell extends Entity {
 
             // If a shell makes contact with the boundaries, add shell to destroyed shells list in gameWorld.
             if (isDestroyed) {
-                gameWorld.destroyShell(getId());
+                gameWorld.destroyEntity(getId());
             }
         }
     }

@@ -14,6 +14,16 @@ public abstract class Tank extends Entity {
     }
 
     @Override
+    public double getXBound() {
+        return getX() + Constants.TANK_WIDTH;
+    }
+
+    @Override
+    public double getYBound() {
+        return getY() + Constants.TANK_HEIGHT;
+    }
+
+    @Override
     public void checkBounds(GameWorld gameWorld) {
         double tankX = Constants.TANK_WIDTH / 2;
         double tankY = Constants.TANK_HEIGHT / 2;

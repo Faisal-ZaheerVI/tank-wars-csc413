@@ -1,5 +1,7 @@
 package edu.csc413.tankgame.model;
 
+import edu.csc413.tankgame.Constants;
+
 /**
  * A general concept for an entity in the Tank Game. This includes everything that can move or be interacted with, such
  * as tanks, shells, walls, power ups, etc.
@@ -32,6 +34,10 @@ public abstract class Entity {
     public double getAngle() {
         return angle;
     }
+
+    public abstract double getXBound();
+
+    public abstract double getYBound();
 
     protected void moveForward(double movementSpeed) {
         x += movementSpeed * Math.cos(angle);

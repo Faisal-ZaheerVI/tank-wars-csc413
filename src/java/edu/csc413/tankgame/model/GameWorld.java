@@ -11,13 +11,13 @@ public class GameWorld {
     //       Add whatever instance variables, constructors, and methods are needed.
     private final List<Entity> entities;
     private final List<Entity> newShells;
-    private final List<Entity> destoryedShells;
+    private final List<Entity> destroyedEntities;
 
     public GameWorld() {
         // TODO: Implement.
         entities = new ArrayList<>();
         newShells = new ArrayList<>();
-        destoryedShells = new ArrayList<>();
+        destroyedEntities = new ArrayList<>();
     }
 
     /** Returns a list of all entities in the game. */
@@ -54,6 +54,68 @@ public class GameWorld {
         }
     }
 
+    /*
+        --- CHECKING FOR NO OVERLAP ---
+        entity2.getX() > entity1.getXBound() --> e2's left side is greater than e1's right side
+        entity1.getX() > e2.getXBound() --> if true, entities dont overlap
+        entity2.getY() > e1.getYBound()
+        entity1.getY() > e2.getYBound() -->
+     */
+
+    public boolean entitiesOverlap(Entity entity1, Entity entity2) {
+        if (entity1.getX() < entity2.getXBound()
+        && entity1.getXBound() > entity2.getX()
+        && entity1.getY() < entity2.getYBound()
+        && entity1.getYBound() > entity2.getY()) {
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+
+    public void handleCollision(Entity entity1, Entity entity2) {
+        if (entity1 instanceof Tank && entity2 instanceof Tank) {
+            // e1 right hitting e2 left -> e1.getXBound() - e2.getX()
+            // e2 right hitting e1 left -> e2.getXBound() - e1.getX()
+            // e1 bottom hitting e2 top -> e1.getYBound() - e2.getY()
+            // e2 bottom hitting e1 top -> e2.getYBound() - e1.getY()
+
+            double[] distances = {entity1.getXBound() - entity2.getX(), entity2.getXBound() - entity1.getX(),
+                    entity1.getYBound() - entity2.getY(), entity2.getYBound() - entity1.getY()};
+            Arrays.sort(distances);
+
+            // Moving tank to right = add to X, moving tank to left = subtract from X
+            // Moving tank up = subtract from Y, moving tank down = add to Y
+
+            double shortestDistance = distances[0];
+            double distanceMoved = shortestDistance / 2;
+
+            if (entity1.getXBound() - entity2.getX() == shortestDistance) {
+                entity1.x = entity1.getX() - distanceMoved;
+                entity2.x = entity2.getX() + distanceMoved;
+            }
+            else if (entity2.getXBound() - entity1.getX() == shortestDistance) {
+                entity1.x = entity1.getX() + distanceMoved;
+                entity2.x = entity2.getX() - distanceMoved;
+            }
+            else if (entity1.getYBound() - entity2.getY() == shortestDistance) {
+                entity1.y = entity1.getY() - distanceMoved;
+                entity2.y = entity2.getY() + distanceMoved;
+            }
+            else if (entity2.getYBound() - entity1.getY() == shortestDistance) {
+                entity1.y = entity1.getY() + distanceMoved;
+                entity2.y = entity2.getY() - distanceMoved;
+            }
+
+        } else if (entity1 instanceof Tank && entity2 instanceof Shell) {
+            // ...
+        } else if (entity1 instanceof Shell && entity2 instanceof Tank) {
+            // ...
+        }
+
+    }
+
     // Can expands to more than just shells, like if the game will have regenerating walls
     // or something similar. Expand to Entity type instead of Shell.
 
@@ -69,15 +131,15 @@ public class GameWorld {
         newShells.clear();
     }
 
-    public void destroyShell(String id) {
-        destoryedShells.add(getEntity(id));
+    public void destroyEntity(String id) {
+        destroyedEntities.add(getEntity(id));
     }
 
-    public List<Entity> getDestroyedShells() {
-        return destoryedShells;
+    public List<Entity> getDestroyedEntities() {
+        return destroyedEntities;
     }
 
-    public void clearDestroyedShells() {
-        destoryedShells.clear();
+    public void clearDestroyedEntities() {
+        destroyedEntities.clear();
     }
 }

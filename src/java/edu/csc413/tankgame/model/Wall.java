@@ -1,5 +1,7 @@
 package edu.csc413.tankgame.model;
 
+import edu.csc413.tankgame.Constants;
+
 public class Wall extends Entity {
     private static int uniqueID = 0;
     private String imageFile;
@@ -20,6 +22,16 @@ public class Wall extends Entity {
 
     public void setImageFile(String fileName) {
         imageFile = fileName;
+    }
+
+    @Override
+    public double getXBound() {
+        return getX() + Constants.WALL_WIDTH;
+    }
+
+    @Override
+    public double getYBound() {
+        return getY() + Constants.WALL_HEIGHT;
     }
 
     @Override
