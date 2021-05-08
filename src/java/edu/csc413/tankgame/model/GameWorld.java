@@ -1,5 +1,7 @@
 package edu.csc413.tankgame.model;
 
+import edu.csc413.tankgame.Constants;
+
 import java.util.*;
 
 /**
@@ -75,21 +77,24 @@ public class GameWorld {
     }
 
     public void handleCollision(Entity entity1, Entity entity2) {
+        // Sorts through and calculates shortest distance when two entities collide,
+        // whether it's the shortest on the top or bottom and left or right between the two entities.
+        double[] distances = {entity1.getXBound() - entity2.getX(), entity2.getXBound() - entity1.getX(),
+                entity1.getYBound() - entity2.getY(), entity2.getYBound() - entity1.getY()};
+        Arrays.sort(distances);
+        // Used without modification for Tank on static entity collisions such as Tank on Wall collisions.
+        double shortestDistance = distances[0];
+        double distanceMoved = shortestDistance / 2; // Used only for Tank on Tank collisions.
+
+        // Tank colliding with another Tank.
         if (entity1 instanceof Tank && entity2 instanceof Tank) {
             // e1 right hitting e2 left -> e1.getXBound() - e2.getX()
             // e2 right hitting e1 left -> e2.getXBound() - e1.getX()
             // e1 bottom hitting e2 top -> e1.getYBound() - e2.getY()
             // e2 bottom hitting e1 top -> e2.getYBound() - e1.getY()
 
-            double[] distances = {entity1.getXBound() - entity2.getX(), entity2.getXBound() - entity1.getX(),
-                    entity1.getYBound() - entity2.getY(), entity2.getYBound() - entity1.getY()};
-            Arrays.sort(distances);
-
             // Moving tank to right = add to X, moving tank to left = subtract from X
             // Moving tank up = subtract from Y, moving tank down = add to Y
-
-            double shortestDistance = distances[0];
-            double distanceMoved = shortestDistance / 2;
 
             if (entity1.getXBound() - entity2.getX() == shortestDistance) {
                 entity1.x = entity1.getX() - distanceMoved;
@@ -107,13 +112,73 @@ public class GameWorld {
                 entity1.y = entity1.getY() + distanceMoved;
                 entity2.y = entity2.getY() - distanceMoved;
             }
-
-        } else if (entity1 instanceof Tank && entity2 instanceof Shell) {
-            // ...
-        } else if (entity1 instanceof Shell && entity2 instanceof Tank) {
-            // ...
         }
 
+        // Tank colliding with a Shell. (And Shell colliding with a Tank).
+        else if (entity1 instanceof Tank && entity2 instanceof Shell) {
+            destroyEntity(entity2.getId());
+            ((Tank) entity1).reduceHealth();
+            if (((Tank) entity1).getHealth() == 0) {
+                destroyEntity(entity1.getId());
+            }
+        } else if (entity1 instanceof Shell && entity2 instanceof Tank) {
+            destroyEntity(entity1.getId());
+            ((Tank) entity2).reduceHealth();
+            if (((Tank) entity2).getHealth() == 0) {
+                destroyEntity(entity2.getId());
+            }
+        }
+
+        // Tank colliding with a Wall. (And Wall being collided by a Tank).
+        else if (entity1 instanceof Wall && entity2 instanceof Tank) {
+            if (entity2.getXBound() - entity1.getX() == shortestDistance) {
+                entity2.x = entity2.getX() - shortestDistance;
+            }
+            else if (entity1.getXBound() - entity2.getX() == shortestDistance) {
+                entity2.x = entity2.getX() + shortestDistance;
+            }
+            else if (entity2.getYBound() - entity1.getY() == shortestDistance) {
+                entity2.y = entity2.getY() - shortestDistance;
+            }
+            else if (entity1.getYBound() - entity2.getY() == shortestDistance) {
+                entity2.y = entity2.getY() + shortestDistance;
+            }
+        }
+        else if (entity1 instanceof Tank && entity2 instanceof Wall) {
+            if (entity1.getXBound() - entity2.getX() == shortestDistance) {
+                entity1.x = entity1.getX() - shortestDistance;
+            }
+            else if (entity2.getXBound() - entity1.getX() == shortestDistance) {
+                entity1.x = entity1.getX() + shortestDistance;
+            }
+            else if (entity1.getYBound() - entity2.getY() == shortestDistance) {
+                entity1.y = entity1.getY() - shortestDistance;
+            }
+            else if (entity2.getYBound() - entity1.getY() == shortestDistance) {
+                entity1.y = entity1.getY() + shortestDistance;
+            }
+        }
+
+        // Shell colliding with a Wall. (And Wall being collided by a Shell).
+        else if (entity1 instanceof Shell && entity2 instanceof Wall) {
+            destroyEntity(entity1.getId());
+            ((Wall) entity2).reduceHealth();
+            if (((Wall) entity2).getHealthPoints() == 0) {
+                destroyEntity(entity2.getId());
+            }
+        } else if (entity2 instanceof Shell && entity1 instanceof Wall) {
+            destroyEntity(entity2.getId());
+            ((Wall) entity1).reduceHealth();
+            if (((Wall) entity1).getHealthPoints() == 0) {
+                destroyEntity(entity1.getId());
+            }
+        }
+
+        // Shell colliding with a Shell.
+        else if (entity1 instanceof Shell && entity2 instanceof Shell) {
+            destroyEntity(entity1.getId());
+            destroyEntity(entity2.getId());
+        }
     }
 
     // Can expands to more than just shells, like if the game will have regenerating walls

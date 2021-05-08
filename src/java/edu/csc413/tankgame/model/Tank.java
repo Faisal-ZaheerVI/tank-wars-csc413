@@ -8,9 +8,11 @@ public abstract class Tank extends Entity {
     // TODO: Implement. A lot of what's below is relevant to all Entity types, not just Tanks. Move it accordingly to
     //       Entity class.
     protected int counter;
+    protected int healthPoints;
 
     public Tank(String id, double x, double y, double angle) {
         super(id, x, y, angle);
+        healthPoints = 3;
     }
 
     @Override
@@ -67,5 +69,15 @@ public abstract class Tank extends Entity {
     protected void fireShell(GameWorld gameWorld) {
         Entity shell = new Shell(getShellX(), getShellY(), getShellAngle());
         gameWorld.addShell(shell);
+    }
+
+    public int getHealth() {
+        return healthPoints;
+    }
+
+    public void reduceHealth() {
+        if (healthPoints > 0) {
+            healthPoints--;
+        }
     }
 }

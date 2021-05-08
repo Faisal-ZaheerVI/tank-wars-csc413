@@ -3,28 +3,19 @@ package edu.csc413.tankgame.model;
 import edu.csc413.tankgame.Constants;
 
 public class AdvancedTank extends Tank {
-    private static boolean shellFired;
-    private static boolean tankStopped;
-    private int counter;
+    //private boolean tankStopped;
+    private final int shootDelay;
 
     public AdvancedTank(String id, double x, double y, double angle) {
         super(id, x, y, angle);
-        shellFired = false;
-        tankStopped = true;
+        //tankStopped = true;
         counter = 0;
+        shootDelay = 300;
     }
 
     @Override
     public void move(GameWorld gameWorld) {
         Entity playerTank = gameWorld.getEntity(Constants.PLAYER_TANK_ID);
-
-        if (!tankStopped) {
-            moveForward(Constants.TANK_MOVEMENT_SPEED / 4);
-        }
-
-        else if (tankStopped) {
-            moveForward(0);
-        }
 
         // To figure out what angle the AI tank needs to face, we'll use the
         // change in the x and y axes between the AI and player tanks.
@@ -51,28 +42,34 @@ public class AdvancedTank extends Tank {
             turnLeft(Constants.TANK_TURN_SPEED);
         }
 
-        if (!shellFired) {
-            fireShell(gameWorld);
-            shellFired = true;
-        }
+        moveForward(Constants.TANK_MOVEMENT_SPEED / 4);
+//        if (!tankStopped) {
+//            moveForward(Constants.TANK_MOVEMENT_SPEED / 4);
+//        }
+//
+//        else if (tankStopped) {
+//            moveForward(0);
+//        }
+//
+//        // Tank wait delay.
+//        // Tank starts moving at start of game after 25 cycles.
+//        // Tank stops and waits for 75 cycles to aim and fire a shell at playerTank.
+//        if (counter % shootDelay == 225) {
+//            tankStopped = true;
+//        }
+//
+//        else if (counter % shootDelay == 0) {
+//            tankStopped = false;
+//        }
 
-        // Every 200 cycles, fire a shell.
-        if (counter % 300 == 0) {
-            shellFired = false;
+        // After 275 cycles, fire a shell, then after 300 cycles every time after.
+        if (counter % shootDelay == 250) {
+            fireShell(gameWorld);
         }
 
         // Resets general counter.
         if (counter >= 1200) {
             counter = 0;
-        }
-
-        // Tank wait delay.
-        if (counter % 300 == 250) {
-            tankStopped = true;
-        }
-
-        else if (counter % 300 == 50) {
-            tankStopped = false;
         }
 
         // Increments counter.

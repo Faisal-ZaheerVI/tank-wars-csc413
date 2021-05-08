@@ -73,9 +73,16 @@ public class GameDriver {
                 Constants.AI_TANK_1_INITIAL_X,
                 Constants.AI_TANK_1_INITIAL_Y,
                 Constants.AI_TANK_1_INITIAL_ANGLE);
+        AdvancedTank advancedTank = new AdvancedTank(
+                Constants.AI_TANK_2_ID,
+                Constants.AI_TANK_2_INITIAL_X,
+                Constants.AI_TANK_2_INITIAL_Y,
+                Constants.AI_TANK_2_INITIAL_ANGLE
+        );
 
         gameWorld.addEntity(playerTank);
         gameWorld.addEntity(simpleTank);
+        gameWorld.addEntity(advancedTank);
 
         // View part:
         runGameView.addSprite(
@@ -90,6 +97,13 @@ public class GameDriver {
                 simpleTank.getX(),
                 simpleTank.getY(),
                 simpleTank.getAngle());
+        runGameView.addSprite(
+                advancedTank.getId(),
+                RunGameView.AI_TANK_IMAGE_FILE,
+                advancedTank.getX(),
+                advancedTank.getY(),
+                advancedTank.getAngle()
+        );
     }
 
     /**
@@ -148,12 +162,20 @@ public class GameDriver {
                     entity.getId(), entity.getX(), entity.getY(), entity.getAngle());
         }
 
-        // Iterates through destroyed shells to add the explosion animation and remove the shells from the game.
+        // Iterates through destroyed entities to add the explosion animation and remove the entities from the game.
         ArrayList<Entity> destroyedEntities = new ArrayList<>(gameWorld.getDestroyedEntities());
         if (destroyedEntities.size() > 0) {
             for (Entity entity : destroyedEntities) {
+                // If a Shell is destroyed, add Shell explosion animation.
                 if (entity instanceof Shell) {
                     runGameView.addAnimation(RunGameView.SHELL_EXPLOSION_ANIMATION, 10, entity.getX(), entity.getY());
+                }
+                // If Tank or Wall is destroyed, add big explosion animation.
+                else if (entity instanceof Tank) {
+                    runGameView.addAnimation(RunGameView.BIG_EXPLOSION_ANIMATION, 10, entity.getX(), entity.getY());
+                }
+                else if (entity instanceof Wall) {
+                    runGameView.addAnimation(RunGameView.BIG_EXPLOSION_ANIMATION, 10, entity.getX(), entity.getY());
                 }
             }
 
@@ -179,6 +201,10 @@ public class GameDriver {
     private void resetGame() {
         // TODO: Implement.
         runGameView.reset();
+        ArrayList<Entity> originalEntities = new ArrayList<>(gameWorld.getEntities());
+        for (Entity entity : originalEntities) {
+            gameWorld.removeEntity(entity.getId());
+        }
     }
 
     public static void main(String[] args) {
@@ -186,3 +212,21 @@ public class GameDriver {
         gameDriver.start();
     }
 }
+
+/*
+    --- TO-DO LIST ---
+    -Create, update and fix endgame conditions:
+        * When playerTank health reaches 0 and dies, game is over and goes to restart screen.
+        * When both AI enemy tanks are destroyed, game is over and goes to restart screen.
+    -Choose at least 15 points worth of Extra Features (Small = 3 pts, Medium = 6 pts, Large = 10 pts).
+
+    --- EXTRA FEATURES ---
+    -Game UI (Showing playerTank health, score bar, etc.) -> Small = 3 pts
+    -Add a Pause screen? -> Medium = 6 pts
+    -Animations -> Small = 3 pts
+
+    --- OPTIONAL FIXES ---
+    -Fix if anything weird with shell collision with playerTank (seems different than Shell collision with other Tanks).
+    -Look into potential fix for collision between Tanks and Walls.
+    -Look into fixing the case when one Shell fired destroys two Walls at a time (fix to only hit one at a time?).
+ */
