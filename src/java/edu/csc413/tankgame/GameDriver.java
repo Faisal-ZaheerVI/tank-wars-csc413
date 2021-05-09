@@ -115,7 +115,12 @@ public class GameDriver {
         // TODO: Implement.
         KeyboardReader keyboardReader = KeyboardReader.instance();
 
-        if (keyboardReader.escapePressed()) {
+        // Check for endgame conditions: If ESC pressed, playerTank dies, or if all AI Tanks die, the game ends.
+        // If game ends, it goes to restart screen.
+        if (keyboardReader.escapePressed() || gameWorld.getEntity(Constants.PLAYER_TANK_ID) == null) {
+            return false;
+        } else if (gameWorld.getEntity(Constants.AI_TANK_1_ID) == null
+        && gameWorld.getEntity(Constants.AI_TANK_2_ID) == null) {
             return false;
         }
 
@@ -168,14 +173,26 @@ public class GameDriver {
             for (Entity entity : destroyedEntities) {
                 // If a Shell is destroyed, add Shell explosion animation.
                 if (entity instanceof Shell) {
-                    runGameView.addAnimation(RunGameView.SHELL_EXPLOSION_ANIMATION, 10, entity.getX(), entity.getY());
+                    runGameView.addAnimation(
+                            RunGameView.SHELL_EXPLOSION_ANIMATION,
+                            10,
+                            entity.getX(),
+                            entity.getY());
                 }
                 // If Tank or Wall is destroyed, add big explosion animation.
                 else if (entity instanceof Tank) {
-                    runGameView.addAnimation(RunGameView.BIG_EXPLOSION_ANIMATION, 10, entity.getX(), entity.getY());
+                    runGameView.addAnimation(
+                            RunGameView.BIG_EXPLOSION_ANIMATION,
+                            10,
+                            entity.getX(),
+                            entity.getY());
                 }
                 else if (entity instanceof Wall) {
-                    runGameView.addAnimation(RunGameView.BIG_EXPLOSION_ANIMATION, 10, entity.getX(), entity.getY());
+                    runGameView.addAnimation(
+                            RunGameView.BIG_EXPLOSION_ANIMATION,
+                            10,
+                            entity.getX(),
+                            entity.getY());
                 }
             }
 
@@ -215,9 +232,8 @@ public class GameDriver {
 
 /*
     --- TO-DO LIST ---
-    -Create, update and fix endgame conditions:
-        * When playerTank health reaches 0 and dies, game is over and goes to restart screen.
-        * When both AI enemy tanks are destroyed, game is over and goes to restart screen.
+    -Update and fix endgame conditions:
+        * Fix the condition that part of the explosion animation still plays when restarting a game.
     -Choose at least 15 points worth of Extra Features (Small = 3 pts, Medium = 6 pts, Large = 10 pts).
 
     --- EXTRA FEATURES ---
