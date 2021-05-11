@@ -11,6 +11,8 @@ public class GameDriver {
     private final MainView mainView;
     private final RunGameView runGameView;
     private final GameWorld gameWorld = new GameWorld();
+    private int counter = 200;
+    private boolean gameOver = false;
 
     public GameDriver() {
         mainView = new MainView(this::startMenuActionPerformed);
@@ -118,10 +120,10 @@ public class GameDriver {
         // Check for endgame conditions: If ESC pressed, playerTank dies, or if all AI Tanks die, the game ends.
         // If game ends, it goes to restart screen.
         if (keyboardReader.escapePressed() || gameWorld.getEntity(Constants.PLAYER_TANK_ID) == null) {
-            return false;
+            gameOver = true;
         } else if (gameWorld.getEntity(Constants.AI_TANK_1_ID) == null
-        && gameWorld.getEntity(Constants.AI_TANK_2_ID) == null) {
-            return false;
+                && gameWorld.getEntity(Constants.AI_TANK_2_ID) == null) {
+            gameOver = true;
         }
 
         // Concurrent error happens when trying to modify same list as you're iterating it!
@@ -167,6 +169,34 @@ public class GameDriver {
                     entity.getId(), entity.getX(), entity.getY(), entity.getAngle());
         }
 
+        clearDestroyedEntities();
+
+        if (gameOver) {
+            counter--;
+            if (counter == 0) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * resetGame is called at the end of the game once the gameplay loop exits. This should clear any existing data from
+     * the game so that if the game is restarted, there aren't any things leftover from the previous run.
+     */
+    private void resetGame() {
+        // TODO: Implement.
+        runGameView.reset();
+        ArrayList<Entity> originalEntities = new ArrayList<>(gameWorld.getEntities());
+        for (Entity entity : originalEntities) {
+            gameWorld.removeEntity(entity.getId());
+        }
+        counter = 200;
+        gameOver = false;
+    }
+
+    private void clearDestroyedEntities() {
         // Iterates through destroyed entities to add the explosion animation and remove the entities from the game.
         ArrayList<Entity> destroyedEntities = new ArrayList<>(gameWorld.getDestroyedEntities());
         if (destroyedEntities.size() > 0) {
@@ -175,7 +205,7 @@ public class GameDriver {
                 if (entity instanceof Shell) {
                     runGameView.addAnimation(
                             RunGameView.SHELL_EXPLOSION_ANIMATION,
-                            10,
+                            5,
                             entity.getX(),
                             entity.getY());
                 }
@@ -207,21 +237,6 @@ public class GameDriver {
         }
 
         gameWorld.clearDestroyedEntities();
-
-        return true;
-    }
-
-    /**
-     * resetGame is called at the end of the game once the gameplay loop exits. This should clear any existing data from
-     * the game so that if the game is restarted, there aren't any things leftover from the previous run.
-     */
-    private void resetGame() {
-        // TODO: Implement.
-        runGameView.reset();
-        ArrayList<Entity> originalEntities = new ArrayList<>(gameWorld.getEntities());
-        for (Entity entity : originalEntities) {
-            gameWorld.removeEntity(entity.getId());
-        }
     }
 
     public static void main(String[] args) {
@@ -232,8 +247,6 @@ public class GameDriver {
 
 /*
     --- TO-DO LIST ---
-    -Update and fix endgame conditions:
-        * Fix the condition that part of the explosion animation still plays when restarting a game.
     -Choose at least 15 points worth of Extra Features (Small = 3 pts, Medium = 6 pts, Large = 10 pts).
 
     --- EXTRA FEATURES ---
@@ -242,6 +255,8 @@ public class GameDriver {
     -Animations -> Small = 3 pts
 
     --- OPTIONAL FIXES ---
+    -Look into preventing friendly fire among enemy AI tanks (if AI tank shoots other AI tank, take no damage?)
+    -Look into avoiding code duplication (Ex: similar code between AI tank .move() methods)
     -Fix if anything weird with shell collision with playerTank (seems different than Shell collision with other Tanks).
     -Look into potential fix for collision between Tanks and Walls.
     -Look into fixing the case when one Shell fired destroys two Walls at a time (fix to only hit one at a time?).
