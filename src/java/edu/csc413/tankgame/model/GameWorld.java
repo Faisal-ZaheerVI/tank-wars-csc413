@@ -1,6 +1,7 @@
 package edu.csc413.tankgame.model;
 
 import edu.csc413.tankgame.Constants;
+import edu.csc413.tankgame.view.HealthBar;
 
 import java.util.*;
 
@@ -14,12 +15,16 @@ public class GameWorld {
     private final List<Entity> entities;
     private final List<Entity> newShells;
     private final List<Entity> destroyedEntities;
+    private final List<HealthBar> healthBars;
+    private HealthBar currentHealthBar;
 
     public GameWorld() {
         // TODO: Implement.
         entities = new ArrayList<>();
         newShells = new ArrayList<>();
         destroyedEntities = new ArrayList<>();
+        healthBars = new ArrayList<>();
+        currentHealthBar = null;
     }
 
     /** Returns a list of all entities in the game. */
@@ -119,12 +124,18 @@ public class GameWorld {
             destroyEntity(entity2.getId());
             ((Tank) entity1).reduceHealth();
             if (((Tank) entity1).getHealth() == 0) {
+                if (entity1 instanceof PlayerTank) {
+                    updateHealthBar(0);
+                }
                 destroyEntity(entity1.getId());
             }
         } else if (entity1 instanceof Shell && entity2 instanceof Tank) {
             destroyEntity(entity1.getId());
             ((Tank) entity2).reduceHealth();
             if (((Tank) entity2).getHealth() == 0) {
+                if (entity2 instanceof PlayerTank) {
+                    updateHealthBar(0);
+                }
                 destroyEntity(entity2.getId());
             }
         }
@@ -179,6 +190,17 @@ public class GameWorld {
             destroyEntity(entity1.getId());
             destroyEntity(entity2.getId());
         }
+
+        // PlayerTank collides with a PowerUp (and PowerUp gets collided by PlayerTank).
+        else if (entity1 instanceof PlayerTank && entity2 instanceof PowerUp) {
+            destroyEntity(entity2.getId());
+            // Activate powerUp benefits for PlayerTank
+            ((PlayerTank) entity1).activatePowerUp();
+        } else if (entity1 instanceof PowerUp && entity2 instanceof PlayerTank) {
+            destroyEntity(entity1.getId());
+            // Activate powerUp benefits for PlayerTank
+            ((PlayerTank) entity2).activatePowerUp();
+        }
     }
 
     // Can expands to more than just shells, like if the game will have regenerating walls
@@ -206,5 +228,28 @@ public class GameWorld {
 
     public void clearDestroyedEntities() {
         destroyedEntities.clear();
+    }
+
+    public List<HealthBar> getHealthBars() {
+        return healthBars;
+    }
+
+    public void addHealthBar(HealthBar healthBar) {
+        healthBars.add(healthBar);
+    }
+
+    public void updateHealthBar(int healthPoints) {
+        for (HealthBar healthBar : healthBars) {
+            if (healthBar.getBarID() == healthPoints) {
+                currentHealthBar = healthBar;
+            }
+        }
+    }
+
+    public HealthBar getHealthBar() {
+        if (currentHealthBar == null) {
+            return healthBars.get(0);
+        }
+        return currentHealthBar;
     }
 }

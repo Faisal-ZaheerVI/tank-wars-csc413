@@ -1,22 +1,23 @@
 package edu.csc413.tankgame.model;
 
 import edu.csc413.tankgame.Constants;
+import edu.csc413.tankgame.view.Sounds;
 
 public class AdvancedTank extends Tank {
     //private boolean tankStopped;
-    private final int shootDelay;
 
     public AdvancedTank(String id, double x, double y, double angle) {
         super(id, x, y, angle);
         //tankStopped = true;
-        counter = 0;
-        shootDelay = 300;
+        counter = 200;
     }
 
     @Override
     public void move(GameWorld gameWorld) {
+        // Create a reference/copy of the playerTank.
         Entity playerTank = gameWorld.getEntity(Constants.PLAYER_TANK_ID);
 
+        // While the playerTank is alive, perform AI movement based on location of the playerTank.
         if (playerTank != null) {
             // To figure out what angle the AI tank needs to face, we'll use the
             // change in the x and y axes between the AI and player tanks.
@@ -44,38 +45,17 @@ public class AdvancedTank extends Tank {
             }
 
             moveForward(Constants.TANK_MOVEMENT_SPEED / 4);
-//        if (!tankStopped) {
-//            moveForward(Constants.TANK_MOVEMENT_SPEED / 4);
-//        }
-//
-//        else if (tankStopped) {
-//            moveForward(0);
-//        }
-//
-//        // Tank wait delay.
-//        // Tank starts moving at start of game after 25 cycles.
-//        // Tank stops and waits for 75 cycles to aim and fire a shell at playerTank.
-//        if (counter % shootDelay == 225) {
-//            tankStopped = true;
-//        }
-//
-//        else if (counter % shootDelay == 0) {
-//            tankStopped = false;
-//        }
 
-            // After 275 cycles, fire a shell, then after 300 cycles every time after.
-            if (counter % shootDelay == 250) {
+            // When the countdown of 200 iterations reaches 0, fire a shell, then reset the countdown.
+            if (counter == 0) {
                 fireShell(gameWorld);
+                Sounds.playSound(Constants.AI_TANK_FIRE);
+                counter = 200;
             }
 
-            // Resets general counter.
-            if (counter >= 1200) {
-                counter = 0;
-            }
-
-            // Increments counter.
-            counter++;
-        } else if (playerTank == null) {
+            // Decrements counter.
+            counter--;
+        } else {
             moveForward(0);
         }
     }

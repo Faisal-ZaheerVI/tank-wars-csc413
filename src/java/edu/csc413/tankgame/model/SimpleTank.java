@@ -1,6 +1,7 @@
 package edu.csc413.tankgame.model;
 
 import edu.csc413.tankgame.Constants;
+import edu.csc413.tankgame.view.Sounds;
 
 public class SimpleTank extends Tank {
     private boolean tankStopped;
@@ -65,6 +66,7 @@ public class SimpleTank extends Tank {
             // After 275 cycles, fire a shell, then after 300 cycles every time after.
             if (counter % shootDelay == 250) {
                 fireShell(gameWorld);
+                Sounds.playSound(Constants.AI_TANK_FIRE);
             }
 
             // Resets general counter.

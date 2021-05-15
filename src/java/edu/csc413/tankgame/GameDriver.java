@@ -11,11 +11,16 @@ public class GameDriver {
     private final MainView mainView;
     private final RunGameView runGameView;
     private final GameWorld gameWorld = new GameWorld();
-    private int counter = 200;
+
+    KeyboardReader keyboardReader = KeyboardReader.instance();
+
+    public static boolean paused = false;
+    public static boolean restartGame = false;
     private boolean gameOver = false;
+    private int endGameCounter = 200;
 
     public GameDriver() {
-        mainView = new MainView(this::startMenuActionPerformed);
+        mainView = new MainView(this::startMenuActionPerformed, this::pauseMenuActionPerformed);
         runGameView = mainView.getRunGameView();
     }
 
@@ -27,6 +32,21 @@ public class GameDriver {
         switch (actionEvent.getActionCommand()) {
             case StartMenuView.START_BUTTON_ACTION_COMMAND -> runGame();
             case StartMenuView.EXIT_BUTTON_ACTION_COMMAND -> mainView.closeGame();
+            default -> throw new RuntimeException("Unexpected action command: " + actionEvent.getActionCommand());
+        }
+    }
+
+    private void pauseMenuActionPerformed(ActionEvent actionEvent) {
+        switch (actionEvent.getActionCommand()) {
+            case PauseMenuView.RESUME_BUTTON_ACTION_COMMAND -> {
+                paused = false;
+                mainView.setScreen(MainView.Screen.RUN_GAME_SCREEN);
+            }
+            case PauseMenuView.RESTART_BUTTON_ACTION_COMMAND -> {
+                paused = false;
+                restartGame = true;
+            }
+            case PauseMenuView.EXIT_BUTTON_ACTION_COMMAND -> mainView.closeGame();
             default -> throw new RuntimeException("Unexpected action command: " + actionEvent.getActionCommand());
         }
     }
@@ -70,23 +90,28 @@ public class GameDriver {
                 Constants.PLAYER_TANK_INITIAL_X,
                 Constants.PLAYER_TANK_INITIAL_Y,
                 Constants.PLAYER_TANK_INITIAL_ANGLE);
-        SimpleTank simpleTank = new SimpleTank(
+        Entity simpleTank = new SimpleTank(
                 Constants.AI_TANK_1_ID,
                 Constants.AI_TANK_1_INITIAL_X,
                 Constants.AI_TANK_1_INITIAL_Y,
                 Constants.AI_TANK_1_INITIAL_ANGLE);
-        AdvancedTank advancedTank = new AdvancedTank(
+        Entity advancedTank = new AdvancedTank(
                 Constants.AI_TANK_2_ID,
                 Constants.AI_TANK_2_INITIAL_X,
                 Constants.AI_TANK_2_INITIAL_Y,
-                Constants.AI_TANK_2_INITIAL_ANGLE
-        );
+                Constants.AI_TANK_2_INITIAL_ANGLE);
+        Entity powerUp = new PowerUp(
+                Constants.POWER_UP_ID,
+                Constants.POWER_UP_INITIAL_X,
+                Constants.POWER_UP_INITIAL_Y);
 
+        // Adds all initial entities to the gameWorld.
         gameWorld.addEntity(playerTank);
         gameWorld.addEntity(simpleTank);
         gameWorld.addEntity(advancedTank);
+        gameWorld.addEntity(powerUp);
 
-        // View part:
+        // View part (Adds sprites to initial entities):
         runGameView.addSprite(
                 playerTank.getId(),
                 RunGameView.PLAYER_TANK_IMAGE_FILE,
@@ -106,6 +131,31 @@ public class GameDriver {
                 advancedTank.getY(),
                 advancedTank.getAngle()
         );
+        runGameView.addSprite(
+                powerUp.getId(),
+                RunGameView.POWER_UP_IMAGE_FILE,
+                powerUp.getX(),
+                powerUp.getY(),
+                powerUp.getAngle()
+        );
+
+        // Adds different iterations of healthBar (0 to 4) to gameWorld.
+        for (int i = 0; i < 5; i++) {
+            HealthBar healthBar = new HealthBar(
+                    Constants.HEALTH_BAR_INITIAL_X,
+                    Constants.HEALTH_BAR_INITIAL_Y);
+            gameWorld.addHealthBar(healthBar);
+        }
+
+        // Only adds sprite for start of game 4 health points Health Bar.
+        HealthBar healthBar = gameWorld.getHealthBar();
+        runGameView.addSprite(
+                healthBar.getId(),
+                healthBar.getImageFile(),
+                healthBar.getX(),
+                healthBar.getY(),
+                healthBar.getAngle()
+        );
     }
 
     /**
@@ -115,66 +165,93 @@ public class GameDriver {
      */
     private boolean updateGame() {
         // TODO: Implement.
-        KeyboardReader keyboardReader = KeyboardReader.instance();
 
-        // Check for endgame conditions: If ESC pressed, playerTank dies, or if all AI Tanks die, the game ends.
-        // If game ends, it goes to restart screen.
-        if (keyboardReader.escapePressed() || gameWorld.getEntity(Constants.PLAYER_TANK_ID) == null) {
-            gameOver = true;
-        } else if (gameWorld.getEntity(Constants.AI_TANK_1_ID) == null
-                && gameWorld.getEntity(Constants.AI_TANK_2_ID) == null) {
-            gameOver = true;
-        }
+        if (paused) {
+            return true;
+        } else {
+            if (restartGame) {
+                return false;
+            }
 
-        // Concurrent error happens when trying to modify same list as you're iterating it!
+            // Pause game conditions:
+            if (keyboardReader.escapePressed() && !paused) {
+                // If game is running and ESC is pressed, game will pause.
+                mainView.setScreen(MainView.Screen.PAUSE_MENU_SCREEN);
+                paused = true;
+            }
 
-        ArrayList<Entity> originalEntities = new ArrayList<>(gameWorld.getEntities());
-        for (Entity entity : originalEntities) {
-            entity.move(gameWorld);
-        }
+            ArrayList<Entity> originalEntities = new ArrayList<>(gameWorld.getEntities());
+            for (Entity entity : originalEntities) {
+                entity.move(gameWorld);
+            }
 
-        // Check bounds for each entity in gameWorld.
-        for (Entity entity : originalEntities) {
-            entity.checkBounds(gameWorld);
-        }
+            // Check bounds for each entity in gameWorld.
+            for (Entity entity : originalEntities) {
+                entity.checkBounds(gameWorld);
+            }
 
-        // Collision detection and handling between entities.
-        for (int i = 0; i < originalEntities.size(); i++) {
-            for (int j = i + 1; j < originalEntities.size(); j++) {
-                boolean entitiesOverlap = gameWorld.entitiesOverlap(gameWorld.getEntities().get(i), gameWorld.getEntities().get(j));
-                if (entitiesOverlap) {
-                    gameWorld.handleCollision(gameWorld.getEntities().get(i), gameWorld.getEntities().get(j));
+            // Collision detection and handling between entities.
+            for (int i = 0; i < originalEntities.size(); i++) {
+                for (int j = i + 1; j < originalEntities.size(); j++) {
+                    boolean entitiesOverlap = gameWorld.entitiesOverlap(gameWorld.getEntities().get(i), gameWorld.getEntities().get(j));
+                    if (entitiesOverlap) {
+                        gameWorld.handleCollision(gameWorld.getEntities().get(i), gameWorld.getEntities().get(j));
+                    }
                 }
             }
-        }
 
-        // 1. Make a copy of the entities list gameWorld.getEntities()
-        // After moving all entities, gameWorld might have a few extra entities in it.
+            for (Entity shell : gameWorld.getShells()) {
+                gameWorld.addEntity(shell);
+                runGameView.addSprite(
+                        shell.getId(),
+                        RunGameView.SHELL_IMAGE_FILE,
+                        shell.getX(),
+                        shell.getY(),
+                        shell.getAngle());
+            }
 
-        // 2. (Better option) Keep track of all the new stuff separately
-        // Don't make a copy of gameWorld.entities()
-        // When shells are added, don't add them to the entities list directly.
-        // Put them in a separate temp list instead.
-        // Process (addSprite) that separate temp list, and then move them all to the main list.
+            gameWorld.clearShells();
 
-        for (Entity shell : gameWorld.getShells()) {
-            runGameView.addSprite(shell.getId(), RunGameView.SHELL_IMAGE_FILE, shell.getX(), shell.getY(), shell.getAngle());
-            gameWorld.addEntity(shell);
-        }
+            for (Entity entity : gameWorld.getEntities()) {
+                runGameView.setSpriteLocationAndAngle(
+                        entity.getId(), entity.getX(), entity.getY(), entity.getAngle());
+            }
 
-        gameWorld.clearShells();
+            clearDestroyedEntities();
 
-        for (Entity entity : gameWorld.getEntities()) {
-            runGameView.setSpriteLocationAndAngle(
-                    entity.getId(), entity.getX(), entity.getY(), entity.getAngle());
-        }
+            // Update Health Bar images to match playerHealth.
+            List<HealthBar> copyHealthBars = gameWorld.getHealthBars();
+            for (HealthBar healthBar : copyHealthBars) {
+                runGameView.removeSprite(healthBar.getId());
+                if (healthBar.getBarID() == gameWorld.getHealthBar().getBarID()) {
+                    runGameView.addSprite(
+                            healthBar.getId(),
+                            healthBar.getImageFile(),
+                            healthBar.getX(),
+                            healthBar.getY(),
+                            healthBar.getAngle());
+                    runGameView.setSpriteLocationAndAngle(
+                            healthBar.getId(),
+                            healthBar.getX(),
+                            healthBar.getY(),
+                            healthBar.getAngle());
+                }
+            }
 
-        clearDestroyedEntities();
+            // Check for endgame conditions:
+            // If playerTank dies, or if all AI Tanks die, the game ends. If game ends, it goes to restart screen.
+            if (gameWorld.getEntity(Constants.PLAYER_TANK_ID) == null) {
+                gameOver = true;
+            } else if (gameWorld.getEntity(Constants.AI_TANK_1_ID) == null
+                    && gameWorld.getEntity(Constants.AI_TANK_2_ID) == null) {
+                gameOver = true;
+            }
 
-        if (gameOver) {
-            counter--;
-            if (counter == 0) {
-                return false;
+            if (gameOver) {
+                endGameCounter--;
+                if (endGameCounter == 0) {
+                    return false;
+                }
             }
         }
 
@@ -192,8 +269,10 @@ public class GameDriver {
         for (Entity entity : originalEntities) {
             gameWorld.removeEntity(entity.getId());
         }
-        counter = 200;
+        endGameCounter = 200;
         gameOver = false;
+        paused = false;
+        restartGame = false;
     }
 
     private void clearDestroyedEntities() {
@@ -247,17 +326,32 @@ public class GameDriver {
 
 /*
     --- TO-DO LIST ---
-    -Choose at least 15 points worth of Extra Features (Small = 3 pts, Medium = 6 pts, Large = 10 pts).
 
-    --- EXTRA FEATURES ---
-    -Game UI (Showing playerTank health, score bar, etc.) -> Small = 3 pts
-    -Add a Pause screen? -> Medium = 6 pts
-    -Animations -> Small = 3 pts
+    --- IN PROGRESS EXTRA FEATURES (3 pts or 1 Small Feature needed) ---
+
+
+    --- DONE EXTRA FEATURES ---
+    * (M) Pause Screen
+        - Works okay, goes to end game screen when restart is clicked, needs fixing.
+        - Ideally if Restart button pressed, it would immediately reset/restart game.
+    * (S) Animations
+    * (S) Sound
+        - Could use volume adjusting for all or specific sounds; can add more sounds.
+        - Add Sound Effects for playerTank reload (indicating to player when they can fire their next shell),
+        explosions (Tank, hitting walls, other collision) and possibly more.
+    * (S or M) Power ups
+        - Currently have one just for shooting limitless shells for a small duration for playerTank = Small feature.
+    * (S) Game UI
+        - Shows playerHealth on top right of the screen and updates as playerTank health goes down.
 
     --- OPTIONAL FIXES ---
     -Look into preventing friendly fire among enemy AI tanks (if AI tank shoots other AI tank, take no damage?)
     -Look into avoiding code duplication (Ex: similar code between AI tank .move() methods)
     -Fix if anything weird with shell collision with playerTank (seems different than Shell collision with other Tanks).
-    -Look into potential fix for collision between Tanks and Walls.
+    -Look into potential fix for weird collision between Tanks and Walls.
     -Look into fixing the case when one Shell fired destroys two Walls at a time (fix to only hit one at a time?).
+    -Fix clunky/messy or figure out more efficient way to implement Health Bar for playerTank.
+
+    NOTE: Concurrent error happens when trying to modify same list as you're iterating it!
+    NOTE: NullPtrException happens when i.e. something is trying to be called/reference when it is null/doesn't exist.
  */

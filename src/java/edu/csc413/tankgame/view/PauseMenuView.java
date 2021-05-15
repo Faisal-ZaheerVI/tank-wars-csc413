@@ -8,21 +8,23 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.URL;
 
-public class StartMenuView extends JPanel {
+public class PauseMenuView extends JPanel {
     public static final Dimension SCREEN_DIMENSIONS = new Dimension(510, 550);
     private static final String START_MENU_IMAGE_FILE = "title.png";
 
     private static final Dimension BUTTON_SIZE = new Dimension(200, 100);
     private static final Font BUTTON_FONT = new Font("Consolas", Font.BOLD, 22);
-    protected static final Rectangle START_BUTTON_BOUNDS = new Rectangle(150, 300, 200, 50);
-    protected static final Rectangle EXIT_BUTTON_BOUNDS = new Rectangle(150, 400, 200, 50);
+    private static final Rectangle RESUME_BUTTON_BOUNDS = new Rectangle(150, 300, 200, 50);
+    private static final Rectangle RESTART_BUTTON_BOUNDS = new Rectangle(150, 375, 200, 50);
+    private static final Rectangle EXIT_BUTTON_BOUNDS = new Rectangle(150, 450, 200, 50);
 
-    public static final String START_BUTTON_ACTION_COMMAND = "start_ac";
+    public static final String RESUME_BUTTON_ACTION_COMMAND = "resume_ac";
+    public static final String RESTART_BUTTON_ACTION_COMMAND = "restart_ac";
     public static final String EXIT_BUTTON_ACTION_COMMAND = "exit_ac";
 
     private final BufferedImage menuBackground;
 
-    public StartMenuView(String startButtonText, ActionListener startMenuListener) {
+    public PauseMenuView(String startButtonText, String resumeButtonText, ActionListener pauseMenuListener) {
         URL imageUrl = getClass().getClassLoader().getResource(START_MENU_IMAGE_FILE);
         if (imageUrl == null) {
             throw new RuntimeException("Background image file not found: " + START_MENU_IMAGE_FILE);
@@ -36,8 +38,9 @@ public class StartMenuView extends JPanel {
         setBackground(Color.BLACK);
         setLayout(null);
 
-        addButton(startButtonText, START_BUTTON_BOUNDS, START_BUTTON_ACTION_COMMAND, startMenuListener);
-        addButton("Exit", EXIT_BUTTON_BOUNDS, EXIT_BUTTON_ACTION_COMMAND, startMenuListener);
+        addButton(resumeButtonText, RESUME_BUTTON_BOUNDS, RESUME_BUTTON_ACTION_COMMAND, pauseMenuListener);
+        addButton(startButtonText, RESTART_BUTTON_BOUNDS, RESTART_BUTTON_ACTION_COMMAND, pauseMenuListener);
+        addButton("Exit", EXIT_BUTTON_BOUNDS, EXIT_BUTTON_ACTION_COMMAND, pauseMenuListener);
     }
 
     private void addButton(
