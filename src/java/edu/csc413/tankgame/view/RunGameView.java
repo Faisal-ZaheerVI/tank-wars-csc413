@@ -57,6 +57,7 @@ public class RunGameView extends JPanel {
         synchronized (spritesById) {
             spritesById.clear();
         }
+        animations.clear();
     }
 
     /**
